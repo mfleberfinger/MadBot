@@ -1,0 +1,32 @@
+__Mutually Assured Destruction__
+
+The only winning move is... to win?
+
+Summary
+	- Each player starts with some number of cities, some number of nukes, and
+		some amount of money..
+		+ Default to 3 cities and 5 nukes.
+		+ Might make city, nuke, and money quantities configurable on new game.
+	- Each nuke has an hourly or daily upkeep cost.
+		+ No need to make this configurable. It would be equivalent to changing
+			starting money.
+	- When a player launches or dismantles a nuke, they no longer pay its
+		upkeep cost.
+	- All commands are sent to the bot in the group chat. All players can see
+		all commands and bot announcements.
+	- A player can permanently dismantle a nuke at any time.
+	- A player can launch a nuke at any target at any time.
+	- The launch command is sent to the bot in the group chat and the bot
+		announces when the nuke will strike its target (default to 24 hours).
+		The bot will probably also makes announcements every few hours. The
+		targeted player may still choose to launch a nuke at any time.
+		+ Default to 24 hours.
+		+ Might make this configurable on new game.
+	- When a nuke strikes its target, that city is destroyed.
+	- When a player runs out of money or cities, that player is eliminated.
+	- The last player standing after any nukes in flight strike their targets
+		wins.
+
+
+
+
