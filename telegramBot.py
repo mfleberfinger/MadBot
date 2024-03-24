@@ -5,15 +5,20 @@ import re
 BOT_NAME = "@MutuallyAssuredDestruction_bot"
 
 # Dictionary of State objects keyed by chat ID (a number).
-gameTable = dict()
+stateTable = dict()
 
 with open("token", "r") as f:
 	bot = telebot.TeleBot(f.read(), parse_mode=None)
 
 @bot.message_handler(commands = ["help"])
 def help(message):
-		output = ("start - Start the bot.\n" +
-					"flee - Run away from a fight.")
+		output = ("help - Send the help message.\n"
+				+ "newgame - Create a new game.\n"
+				+ "join - Join the game.\n"
+				+ "startgame - Start the game when all players are ready.\n"
+				+ "scoreboard - See the current state of the game (players, remaining money, remaining nukes, remaining cities, etc.)\n"
+				+ "nuke - Launch a nuke. Use the form \"/nuke City Name\".\n"
+				+ "dismantle - Permanently dismantle a nuke and stop paying its upkeep cost.")
 		bot.reply_to(message, output)
 
 # Receive all messages and parse them as commands if valid.
@@ -22,19 +27,10 @@ def help(message):
 def handle_command(message):
 	chatId = message.chat.id
 	output = ""
-#	if chatId not in gameTable:
-#		s = state.State(str(chatId))
-#		g = game.Game(s)
-#		gameTable[chatId] = g
-#		if s.newGame:
-#			output += ("Welcome, adventurer, to Generica, a land of infinite* possibilities!\n\n\n" +
-#						"* Subject to technical and mechanical limitations. Other limitations may apply. " +
-#						"Infinite does not necessarily mean interesting. Developer assumes no liability " +
-#						"for any shortcomings, bugs, bad design, anti-features, or malfeasance. " +
-#						"May cause cancer.\n\n\n")
-#	else:
-#		g = gameTable[chatId]
-#		s = g.gameState
+	if chatId not in stateTable:
+		# TODO: Create a new state object or load an existing state.
+	else:
+		# TODO: Set a local variable to the current chat's bot state.
 	cmd = message.text
 	cmd = re.sub(BOT_NAME, "", cmd)
 	# Make commands case-insensitive and split into command and arguments at spaces.

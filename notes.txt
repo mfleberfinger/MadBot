@@ -32,7 +32,7 @@ Summary
 TODO:
 
 	Copy whatever can be reused from the RPG bot.
-		- The Telegram bot part is probably useful.
+		- The Telegram bot part is probably useful. [done]
 		- State and maybe Game are also likely useful.
 	
 	Search the .py files for "TODO" comments.
