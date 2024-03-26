@@ -27,6 +27,47 @@ Summary
 	- The last player standing after any nukes in flight strike their targets
 		wins.
 
+How to maintain state?
+	- Probably slightly different from the RPG bot, where the state object was
+		passed into the game object. It probably makes more sense for the
+		state class to store the overall state of the bot for a given chat,
+		including the game object itself.
+
+Classes:
+
+	state
+		- Maintains the current state of the bot, including any active games.
+
+	player
+		- Represents an individual player.
+		- Members
+			+ cities: Collection of strings. Holds the names of the player's
+				remaining cities.
+			+ nukes: Integer keeping track of the player's remaining nukes.
+			+ money: Integer keeping track of the player's remaining money.
+	
+	game
+		- Keeps track of an ongoing game.
+		- Members
+			+ activePlayers: A list of player objects representing each player
+				remaining in the current game.
+			+ eliminatedPlayers: A collection of eliminated players and their
+				causes of elimination (economic collapse or annihilation). This
+				will be used when the scoreboard is displayed and at the end of
+				the game when the final results are announced.
+			+ upkeepCost: The cost per day of owning a nuke.
+			+ inFlight: A collection of nukes that have been launched, their
+				targets, and the datetimes at which they are scheduled to hit
+				their targets.
+			+ flightTime: How long a nuke takes to reach its target after launch.
+		- Methods
+			+ launch
+			+ dismantle
+			+ getScoreboard
+			+ update: Periodically called by the bot/state class or a timer.
+				Advances any timed logic (nukes in flight, upkeep cost).
+			
+
 
 
 TODO:

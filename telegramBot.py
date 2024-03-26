@@ -42,8 +42,7 @@ def handle_command(message):
 	#print("output = " + output)
 
 	# Save after every command.
-	# telebot makes this the more convenient approach.
-	#s.save()
+	s.save()
 
 	
 bot.infinity_polling()
