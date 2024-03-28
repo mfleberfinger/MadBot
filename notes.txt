@@ -10,6 +10,10 @@ Summary
 	- Each nuke has an hourly or daily upkeep cost.
 		+ No need to make this configurable. It would be equivalent to changing
 			starting money.
+			-> On second thought, this should be configurable if other values
+				can be configured. For example, costs would need to be deducted
+				much more frequently if nuke flight time is reduced to, let's
+				say, 30 minutes (a realistic ICBM flight time, apparently).
 	- When a player launches or dismantles a nuke, they no longer pay its
 		upkeep cost.
 	- All commands are sent to the bot in the group chat. All players can see
@@ -36,7 +40,11 @@ How to maintain state?
 Classes:
 
 	state
-		- Maintains the current state of the bot, including any active games.
+		- Maintains the current state of the bot in a single chat, including any
+			active games.
+		- Members:
+			+ game: An instance of the game object. Null (None) if there is no
+				ongoing game.
 
 	player
 		- Represents an individual player.
@@ -51,29 +59,73 @@ Classes:
 		- Members
 			+ activePlayers: A list of player objects representing each player
 				remaining in the current game.
+				-> Probably a dictionary keyed by an ID provided by the caller
+					(whatever unique ID Telegram gives users for the bot or an
+					arbitrary value for the test harness).
 			+ eliminatedPlayers: A collection of eliminated players and their
 				causes of elimination (economic collapse or annihilation). This
 				will be used when the scoreboard is displayed and at the end of
 				the game when the final results are announced.
-			+ upkeepCost: The cost per day of owning a nuke.
+			+ upkeepPeriod: How often (in seconds?) upkeep cost is deducted.
+				Will probably use one day and poll something like every minute
+				but want to design for the possibility of allowing custom games.
+			+ upkeepCost: The cost per upkeep period of owning a nuke.
+			+ lastUpkeepTime: Datetime at which the last upkeep deduction
+				occurred.
 			+ inFlight: A collection of nukes that have been launched, their
-				targets, and the datetimes at which they are scheduled to hit
-				their targets.
+				owners, their targets, and the datetimes at which they are
+				scheduled to hit their targets.
 			+ flightTime: How long a nuke takes to reach its target after launch.
+			+ gameOver: False when a game is ongoing. True if the game has ended.
+			+ gameStarted: False if the game has not yet started, meaning players
+				can still join. True if the game has started.
 		- Methods
-			+ launch
-			+ dismantle
-			+ getScoreboard
+			+ join(playerId, citieNames): Add a new player.
+			+ start(): Close the game to new players and start playing.
+				-> Sets lastUpkeepTime to current time.
+			+ launch(player, target): Called when a player launches a nuke.
+				-> Add a nuke to the inFlight collection.
+			+ dismantle(playerId): Called when a player dismantles a nuke.
+			+ getScoreboard(): Returns a string showing  the current state of the game:
+				-> players
+					- active/eliminated
+					- remaining cities
+					- remaining money
+					- remaining nukes
+				-> nukes in flight
+					- owner
+					- target
+					- time to impact
 			+ update: Periodically called by the bot/state class or a timer.
-				Advances any timed logic (nukes in flight, upkeep cost).
-			
+				-> Compares impact times in the inFlight collection to the
+					current time and, if an impact should occur during this
+					update, removes the impacting nukes from inFlight, removes
+					the targeted cities from their owners' cities collections,
+					and adds a message about the nukes hitting their targets to
+					the output for this update.
+					- Remember to handle the case where the targeted city was
+						already destroyed by another nuke arriving earlier.
+						"The crater once known as cityName gets a little deeper."
+				-> Deducts upkeep if current time > lastUpkeepTime + upkeepPeriod.
+				-> Eliminates players with $0 or less or 0 cities and adds a
+					message about those eliminations to the output.
+				-> Returns any output the bot should send to tell players
+					about the game state.
+				-> If the game has ended (at most one player remaining and no
+					nukes in flight; or no nukes remaining in inventory or in
+					flight), set gameOver and return a game over message stating
+					the winner (if there is one) and displaying the final
+					scoreboard.
 
 
 
 TODO:
 
-	Copy whatever can be reused from the RPG bot.
-		- The Telegram bot part is probably useful. [done]
-		- State and maybe Game are also likely useful.
+	Write design notes (see "Classes" above) until ready to start writing code.
+
+	Consider writing a terminal application to test the game separately from
+		the Telegram bot. This should make it more convenient to test the game
+		logic with multiple "players" than trying to get others to help test
+		through the Telegram bot.
 	
 	Search the .py files for "TODO" comments.
