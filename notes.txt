@@ -39,26 +39,50 @@ How to maintain state?
 
 Classes:
 
-	state
+	State
 		- Maintains the current state of the bot in a single chat, including any
 			active games.
-		- Members:
+		- Members
 			+ game: An instance of the game object. Null (None) if there is no
 				ongoing game.
+			+ static SAVE_DIRECTORY: Stores the (relative) path of the directory
+				containing save files.
+		- Methods
+			+ __init__(self, saveName): Instantiates state with the given
+				save name in self.saveName.
+			+ create(saveName): Loads a saved state, if one exists with the given
+				saveName, or creates a new state. Returns a reference to the
+				created state object to the caller.
+			+ load(saveName): Uses pickle to load the state from the file with
+				the name in saveName.
+			+ save(state): Uses pickle to save the state in the file with
+				the name in stateToSave.saveName.
+			+ newGame(self): Creates a new game object and stores it in self.game.
+			+ endGame(self): Sets self.game to None. To be used when the game ends.
 
-	player
+	Player
 		- Represents an individual player.
+		- Instantiated as necessary by an instance of game.
 		- Members
 			+ cities: Collection of strings. Holds the names of the player's
 				remaining cities.
 			+ nukes: Integer keeping track of the player's remaining nukes.
 			+ money: Integer keeping track of the player's remaining money.
+		- Methods
+			+ __init__(self, cities, nukes, money)
 	
-	game
+	Nuke
+		- Represents a nuke in flight.
+		- Members:
+			+ owner: ID of the player who launched the nuke.
+			+ target: Name of the targeted city.
+			+ launchTime: Datetime at which the nuke was launched.
+	
+	Game
 		- Keeps track of an ongoing game.
 		- Members
-			+ activePlayers: A list of player objects representing each player
-				remaining in the current game.
+			+ activePlayers: A collection of player objects representing each
+				player remaining in the current game.
 				-> Probably a dictionary keyed by an ID provided by the caller
 					(whatever unique ID Telegram gives users for the bot or an
 					arbitrary value for the test harness).
@@ -73,20 +97,21 @@ Classes:
 			+ lastUpkeepTime: Datetime at which the last upkeep deduction
 				occurred.
 			+ inFlight: A collection of nukes that have been launched, their
-				owners, their targets, and the datetimes at which they are
-				scheduled to hit their targets.
+				owners, their targets, and the datetimes at which they were
+				launched.
 			+ flightTime: How long a nuke takes to reach its target after launch.
 			+ gameOver: False when a game is ongoing. True if the game has ended.
 			+ gameStarted: False if the game has not yet started, meaning players
 				can still join. True if the game has started.
 		- Methods
-			+ join(playerId, citieNames): Add a new player.
-			+ start(): Close the game to new players and start playing.
+			+ __init__(self, upkeepPeriod, upkeepCost, flightTime)
+			+ join(self, playerId, citieNames): Add a new player.
+			+ start(self): Close the game to new players and start playing.
 				-> Sets lastUpkeepTime to current time.
-			+ launch(player, target): Called when a player launches a nuke.
+			+ launch(self, player, target): Called when a player launches a nuke.
 				-> Add a nuke to the inFlight collection.
-			+ dismantle(playerId): Called when a player dismantles a nuke.
-			+ getScoreboard(): Returns a string showing  the current state of the game:
+			+ dismantle(self, playerId): Called when a player dismantles a nuke.
+			+ getScoreboard(self): Returns a string showing  the current state of the game:
 				-> players
 					- active/eliminated
 					- remaining cities
@@ -96,7 +121,7 @@ Classes:
 					- owner
 					- target
 					- time to impact
-			+ update: Periodically called by the bot/state class or a timer.
+			+ update(self): Periodically called by the bot/state class or a timer.
 				-> Compares impact times in the inFlight collection to the
 					current time and, if an impact should occur during this
 					update, removes the impacting nukes from inFlight, removes
@@ -120,8 +145,8 @@ Classes:
 
 
 TODO:
-
-	Write design notes (see "Classes" above) until ready to start writing code.
+	
+	Document arguments to methods in the source files (see nuke.py for example).
 
 	Consider writing a terminal application to test the game separately from
 		the Telegram bot. This should make it more convenient to test the game
