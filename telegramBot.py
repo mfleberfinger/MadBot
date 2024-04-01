@@ -4,6 +4,12 @@ import re
 
 BOT_NAME = "@MutuallyAssuredDestruction_bot"
 
+# Default values for game.
+NUKES = 5				# Number of nukes each player starts with.
+MONEY = 1000000000		# Amount of money each player starts with ($1 billion).
+UPKEEP_PERIOD = 86400	# How often upkeep is charged, in seconds.
+UPKEEP_COST = 50000000	# Upkeep cost of a single nuke ($50 million).
+
 # Dictionary of State objects keyed by chat ID (a number).
 stateTable = dict()
 

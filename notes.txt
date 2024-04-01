@@ -64,6 +64,8 @@ Classes:
 		- Represents an individual player.
 		- Instantiated as necessary by an instance of game.
 		- Members
+			+ playerId: Unique identifier for this player.
+			+ playerName: What to call this player in the chat.
 			+ cities: Collection of strings. Holds the names of the player's
 				remaining cities.
 			+ nukes: Integer keeping track of the player's remaining nukes.
@@ -105,7 +107,7 @@ Classes:
 				can still join. True if the game has started.
 		- Methods
 			+ __init__(self, upkeepPeriod, upkeepCost, flightTime)
-			+ join(self, playerId, citieNames): Add a new player.
+			+ join(self, playerId, playerName, cityNames): Add a new player.
 			+ start(self): Close the game to new players and start playing.
 				-> Sets lastUpkeepTime to current time.
 			+ launch(self, player, target): Called when a player launches a nuke.
@@ -145,6 +147,9 @@ Classes:
 
 
 TODO:
+
+	Funny idea: Instead of allowing players to join, automatically add all users
+		in the group chat to the game when a new game is started.
 	
 	Document arguments to methods in the source files (see nuke.py for example).
 
