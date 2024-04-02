@@ -31,5 +31,9 @@ class Game:
 			newPlayer = Player(playerId, playerName, cityNames, self.startNukes,
 				self.startMoney)
 			self.activePlayers[playerId] = newPlayer
+			output = newPlayer.playerName + " has joined the game."
 		else:
-			output = "The game has started. No new players may join.
+			output = "The game has started. No new players may join."
+		return output
+	
+	def

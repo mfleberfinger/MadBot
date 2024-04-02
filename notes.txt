@@ -36,8 +36,28 @@ How to maintain state?
 		passed into the game object. It probably makes more sense for the
 		state class to store the overall state of the bot for a given chat,
 		including the game object itself.
+	- A database is probably the right way to maintain state for many chats,
+		rather than holding an object in memory for each chat in which the bot
+		is active and repeatedly writing it out to a file. However, I don't
+		want to install a database and doing everything in memory and in the
+		filesystem will work just fine for the expected number of users/chats.
+
 
 Classes:
+
+	telegramBot.py (not really a class)
+		Functions:
+			- InitializeBot(): Somehow need to load the state for all chats in
+				which the bot is currently running games. If the bot goes down
+				it needs to be able to pick up where it left off without waiting
+				for a message from any chat in which it's active.
+				+ Send message to known chat_id:
+					https://pytba.readthedocs.io/en/latest/sync_version/index.html#telebot.TeleBot.send_message
+			- Start(): Runs when the /start command is used or when any command
+				is sent to the bot and a state object doesn't already exist for
+				the sending chat.
+			- StartGame(state): Start the game in the given state object and start
+				calling that game's update method on a schedule.
 
 	State
 		- Maintains the current state of the bot in a single chat, including any
@@ -82,32 +102,32 @@ Classes:
 	
 	Game
 		- Keeps track of an ongoing game.
-		- Members
-			+ activePlayers: A collection of player objects representing each
+		- Members																	[all added to game.py]
+			+ activePlayers: A collection of player objects representing each		[added]
 				player remaining in the current game.
 				-> Probably a dictionary keyed by an ID provided by the caller
 					(whatever unique ID Telegram gives users for the bot or an
 					arbitrary value for the test harness).
-			+ eliminatedPlayers: A collection of eliminated players and their
+			+ eliminatedPlayers: A collection of eliminated players and their		[added]
 				causes of elimination (economic collapse or annihilation). This
 				will be used when the scoreboard is displayed and at the end of
 				the game when the final results are announced.
-			+ upkeepPeriod: How often (in seconds?) upkeep cost is deducted.
+			+ upkeepPeriod: How often (in seconds?) upkeep cost is deducted.		[added]
 				Will probably use one day and poll something like every minute
 				but want to design for the possibility of allowing custom games.
-			+ upkeepCost: The cost per upkeep period of owning a nuke.
-			+ lastUpkeepTime: Datetime at which the last upkeep deduction
+			+ upkeepCost: The cost per upkeep period of owning a nuke.				[added]
+			+ lastUpkeepTime: Datetime at which the last upkeep deduction			[added]
 				occurred.
-			+ inFlight: A collection of nukes that have been launched, their
+			+ inFlight: A collection of nukes that have been launched, their		[added]
 				owners, their targets, and the datetimes at which they were
 				launched.
-			+ flightTime: How long a nuke takes to reach its target after launch.
-			+ gameOver: False when a game is ongoing. True if the game has ended.
-			+ gameStarted: False if the game has not yet started, meaning players
+			+ flightTime: How long a nuke takes to reach its target after launch.	[added]
+			+ gameOver: False when a game is ongoing. True if the game has ended.	[added]
+			+ gameStarted: False if the game has not yet started, meaning players	[added]
 				can still join. True if the game has started.
 		- Methods
-			+ __init__(self, upkeepPeriod, upkeepCost, flightTime)
-			+ join(self, playerId, playerName, cityNames): Add a new player.
+			+ __init__(self, upkeepPeriod, upkeepCost, flightTime)					[added]
+			+ join(self, playerId, playerName, cityNames): Add a new player.		[added]
 			+ start(self): Close the game to new players and start playing.
 				-> Sets lastUpkeepTime to current time.
 			+ launch(self, player, target): Called when a player launches a nuke.

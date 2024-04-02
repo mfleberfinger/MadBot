@@ -35,8 +35,10 @@ def handle_command(message):
 	output = ""
 	if chatId not in stateTable:
 		# TODO: Create a new state object or load an existing state.
+		# Will probably move this to a Start() function (see notes).
 	else:
 		# TODO: Set a local variable to the current chat's bot state.
+		# Will probably move this to an InitializeBot() function (see notes).
 	cmd = message.text
 	cmd = re.sub(BOT_NAME, "", cmd)
 	# Make commands case-insensitive and split into command and arguments at spaces.
