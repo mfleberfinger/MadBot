@@ -125,12 +125,16 @@ Classes:
 			+ gameOver: False when a game is ongoing. True if the game has ended.	[added]
 			+ gameStarted: False if the game has not yet started, meaning players	[added]
 				can still join. True if the game has started.
+			+ cityOwners: Dictionary of player IDs, keyed by city names. Used		[added]
+				to ensure that city names are unique and to determine who is
+				being attacked when a player uses /nuke {city name}.
 		- Methods
 			+ __init__(self, upkeepPeriod, upkeepCost, flightTime)					[added]
 			+ join(self, playerId, playerName, cityNames): Add a new player.		[added]
-			+ start(self): Close the game to new players and start playing.
+			+ start(self): Close the game to new players and start playing.			[added]
 				-> Sets lastUpkeepTime to current time.
-			+ launch(self, player, target): Called when a player launches a nuke.
+			+ launch(self, attackingPlayerId, targetCity): Called when a player
+				launches a nuke.
 				-> Add a nuke to the inFlight collection.
 			+ dismantle(self, playerId): Called when a player dismantles a nuke.
 			+ getScoreboard(self): Returns a string showing  the current state of the game:
@@ -165,11 +169,11 @@ Classes:
 					scoreboard.
 
 
+Funny idea: Instead of allowing players to join, automatically add all users
+	in the group chat to the game when a new game is started.
+
 
 TODO:
-
-	Funny idea: Instead of allowing players to join, automatically add all users
-		in the group chat to the game when a new game is started.
 	
 	Document arguments to methods in the source files (see nuke.py for example).
 
