@@ -49,7 +49,7 @@ class Game:
 	# Close the game to new players and start playing.
 	def start(self):
 		output = "The game is already in progress."
-		if not sale.gameStarted:
+		if not self.gameStarted:
 			self.lastUpkeepTime = datetime.datetime.now()
 			self.gameStarted = True
 			output =  "The game has started. Welcome to the Cold War."
