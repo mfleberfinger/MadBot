@@ -8,13 +8,13 @@ class Game:
 	# startMoney: Amount of money each player starts with.
 	# upkeepPeriod: How often (in seconds) upkeep cost is deducted.
 	# upkeepCost: The cost per upkeep period of owning a nuke.
-	# flightTime: How long a nuke takes to reach its target after launch.
+	# flightTime: How long a nuke takes to reach its target after launch, in seconds.
 	def __init__(self, startNukes, startMoney, upkeepPeriod, upkeepCost, flightTime):
 		self.startNukes = startNukes		# Number of nukes each player starts with.
 		self.startMoney = startMoney		# Amount of money each player starts with.
 		self.upkeepPeriod = upkeepPeriod	# How often upkeep is charged, in seconds.
 		self.upkeepCost = upkeepCost		# The cost per upkeep period of owning a nuke.
-		self.flightTime = flightTime		# How long a nuke takes to reach its target after launch.
+		self.flightTime = flightTime		# How long a nuke takes to reach its target after launch, in seconds.
 		self.activePlayers = dict()			# Players remaining in the game.
 		self.eliminatedPlayers = dict()		# Players who have been eliminated.
 		self.cityOwners = dict()			# Player IDs, keyed by city name.
@@ -24,8 +24,12 @@ class Game:
 		self.gameStarted = False			# True if the game has started, meaning no new players may join.
 
 	# Add player to the game.
+	# playerId: Unique identifier for the new player.
+	# playerName: Player name displayed to users.
+	# cityNames: List of names for this player's cities. Each city name must be
+	#	unique within an instance of Game.
 	def join(self, playerId, playerName, cityNames):
-		output = ""
+		output = "Error in Game.join()."
 		claimedCityNames = list()
 		for city in cityNames:
 			if city in cityOwners:
@@ -59,4 +63,45 @@ class Game:
 	# attackingPlayerId: Unique ID of the player launching the nuke.
 	# targetCity: Name of the targeted city.
 	def launch(self, attackingPlayerId, targetCity):
-		
+		output = "Error in Game.launch()."
+		# Make sure the player exists and hasn't been eliminated.
+		if attackingPlayerId not in self.activePlayers:
+			output = "Only players who have not been eliminated may do that."
+		# Make sure the target exists.
+		elif targetCity not in self.cityOwners:
+			output = "There is no city called " + targetCity + "."
+		# Make sure the player has a nuke to launch.
+		elif self.activePlayers[attackingPlayerId].nukes < 1:
+			output = "You have nothing to launch."
+		# Launch the nuke and generate appropriate output.
+		else:
+			attackingPlayerName = self.activePlayers[attackingPlayerId].playerName
+			targetPlayerId = self.cityOwners[targetCity]
+			targetPlayerName = ""
+			if targetPlayerId in self.activePlayers:
+				targetPlayerName = self.activePlayers[targetPlayerId].playerName
+			else:
+				targetPlayerName = self.eliminatedPlayers[targetPlayerId].playerName
+			nuke = Nuke(attackingPlayerId, targetCity, datetime.datetime.now())
+			self.inFlight.append(nuke)
+			output = ("LAUNCH WARNING: {0} has launched a missile at {1}, owned"
+				" by {2}. The missile will reach {1} at {3} UTC.")
+			# Perform any bookkeeping required by the Player object.
+			self.activePlayers[targetPlayerId].launch()
+			output = output.format(attackingPlayerName, targetCity, targetPlayerName,
+				nuke.launchTime + datetime.timedelta(seconds=self.flightTime))
+		return output
+
+	# Dismantle a nuke.
+	# The player for which to dismantle the nuke.
+	def dismantle(self, playerId):
+		output = "Error in Game.dismantle()."
+		# Make sure the player exists and hasn't been eliminated.
+		if playerId not in self.activePlayers:
+			output = "Only players who have not been eliminated may do that."
+		# Make sure the player has a nuke to dismantle.
+		elif self.activePlayers[playerId].nukes < 1:
+			output = "You have nothing to dismantle."
+		else:
+			self.activePlayers[playerId].dismantle()
+		return output

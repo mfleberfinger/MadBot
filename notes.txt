@@ -133,7 +133,7 @@ Classes:
 			+ join(self, playerId, playerName, cityNames): Add a new player.		[added]
 			+ start(self): Close the game to new players and start playing.			[added]
 				-> Sets lastUpkeepTime to current time.
-			+ launch(self, attackingPlayerId, targetCity): Called when a player
+			+ launch(self, attackingPlayerId, targetCity): Called when a player		[added]
 				launches a nuke.
 				-> Add a nuke to the inFlight collection.
 			+ dismantle(self, playerId): Called when a player dismantles a nuke.
