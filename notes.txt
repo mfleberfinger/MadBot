@@ -28,8 +28,16 @@ Summary
 		+ Might make this configurable on new game.
 	- When a nuke strikes its target, that city is destroyed.
 	- When a player runs out of money or cities, that player is eliminated.
-	- The last player standing after any nukes in flight strike their targets
-		wins.
+	- The game ends when there are no nukes in flight or held by any remaining
+		players or when there is only one player left standing.
+	- When the game ends:
+		+ If only one player is left standing, that player wins.
+		+ If two or more players remain, the player with the most cities wins.
+		+ If two or more remaining players hold the same number of cities, the
+			player with the most money remaining out of the players with the most
+			cities wins.
+		+ If two or more remaining players have the same number of cities and
+			the same amount of money, the game ends in a draw.
 
 How to maintain state?
 	- Probably slightly different from the RPG bot, where the state object was
@@ -167,10 +175,6 @@ Classes:
 					flight), set gameOver and return a game over message stating
 					the winner (if there is one) and displaying the final
 					scoreboard.
-
-
-Funny idea: Instead of allowing players to join, automatically add all users
-	in the group chat to the game when a new game is started.
 
 
 TODO:

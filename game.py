@@ -1,5 +1,6 @@
 import datetime
 import player
+import nuke
 
 class Game:
 
@@ -22,6 +23,7 @@ class Game:
 		self.inFlight = list()				# List of nukes in flight, owners, targets, and launch times.
 		self.gameOver = False				# True if the game has ended.
 		self.gameStarted = False			# True if the game has started, meaning no new players may join.
+		self.tzname = datetime.datetime.now().astimezone().tzname() # Time zone code (e.g. EDT, EST, UTC).
 
 	# Add player to the game.
 	# playerId: Unique identifier for the new player.
@@ -32,9 +34,9 @@ class Game:
 		output = "Error in Game.join()."
 		claimedCityNames = list()
 		for city in cityNames:
-			if city in cityOwners:
+			if city in self.cityOwners:
 				claimedCityNames.append(city)
-		if gameStarted:
+		if self.gameStarted:
 			output = "The game has started. No new players may join."
 		elif playerId in self.activePlayers:
 			output = "You've already joined, " + playerName + "."
@@ -42,21 +44,23 @@ class Game:
 			output = ("The following city names are already taken: " +
 				", ".join(claimedCityNames))
 		else:
-			newPlayer = Player(playerId, playerName, cityNames, self.startNukes,
+			newPlayer = player.Player(playerId, playerName, cityNames, self.startNukes,
 				self.startMoney)
 			self.activePlayers[playerId] = newPlayer
 			for city in cityNames:
-				cityOwners[city] = playerId
+				self.cityOwners[city] = playerId
 			output = newPlayer.playerName + " has joined the game."
 		return output
 	
 	# Close the game to new players and start playing.
 	def start(self):
 		output = "The game is already in progress."
-		if not self.gameStarted:
+		if len(self.activePlayers) < 2:
+			output = "At least two players are required to start the game."
+		elif not self.gameStarted:
 			self.lastUpkeepTime = datetime.datetime.now()
 			self.gameStarted = True
-			output =  "The game has started. Welcome to the Cold War."
+			output = "The game has started. Welcome to the Cold War."
 		return output
 	
 	# Called when a player launches a nuke.
@@ -82,14 +86,15 @@ class Game:
 				targetPlayerName = self.activePlayers[targetPlayerId].playerName
 			else:
 				targetPlayerName = self.eliminatedPlayers[targetPlayerId].playerName
-			nuke = Nuke(attackingPlayerId, targetCity, datetime.datetime.now())
-			self.inFlight.append(nuke)
-			output = ("LAUNCH WARNING: {0} has launched a missile at {1}, owned"
-				" by {2}. The missile will reach {1} at {3} UTC.")
+			newNuke = nuke.Nuke(attackingPlayerId, targetCity, datetime.datetime.now())
+			self.inFlight.append(newNuke)
+			output = ("LAUNCH WARNING: {0} has launched a missile at {1} (owned"
+				" by {2}). The missile will reach {1} at {3} {4}.")
 			# Perform any bookkeeping required by the Player object.
-			self.activePlayers[targetPlayerId].launch()
+			self.activePlayers[attackingPlayerId].launch()
 			output = output.format(attackingPlayerName, targetCity, targetPlayerName,
-				nuke.launchTime + datetime.timedelta(seconds=self.flightTime))
+				newNuke.launchTime + datetime.timedelta(seconds=self.flightTime),
+				self.tzname)
 		return output
 
 	# Dismantle a nuke.
@@ -104,4 +109,5 @@ class Game:
 			output = "You have nothing to dismantle."
 		else:
 			self.activePlayers[playerId].dismantle()
+			output = self.activePlayers[playerId].playerName + " has dismantled a weapon."
 		return output
