@@ -144,8 +144,9 @@ Classes:
 			+ launch(self, attackingPlayerId, targetCity): Called when a player		[added]
 				launches a nuke.
 				-> Add a nuke to the inFlight collection.
-			+ dismantle(self, playerId): Called when a player dismantles a nuke.
-			+ getScoreboard(self): Returns a string showing  the current state of the game:
+			+ dismantle(self, playerId): Called when a player dismantles a nuke.	[added]
+			+ getScoreboard(self): Returns a string showing  the current state
+				of the game:
 				-> players
 					- active/eliminated
 					- remaining cities
@@ -178,6 +179,17 @@ Classes:
 
 
 TODO:
+
+	Work on Game.getScoreboard().
+		- Use markdown formatting (see the help command in telegramBot.py for
+			an example).
+		- When getting cities (or any other text that will be displayed) from
+			players, call telebot.formatting.escape_markdown() before storing it.
+			Be sure not to escape that text again afterwards. Otherwise the
+			Telegram will return some kind of markdown error instead of sending
+			messages containing that text.
+	
+	See notes above about classes.
 	
 	Document arguments to methods in the source files (see nuke.py for example).
 

@@ -111,3 +111,9 @@ class Game:
 			self.activePlayers[playerId].dismantle()
 			output = self.activePlayers[playerId].playerName + " has dismantled a weapon."
 		return output
+	
+	# Return a string describing the current start of the game.
+	# The Telegram bot will need to split this into multiple messages in some
+	#	cases.
+	def getScoreboard(self):
+
