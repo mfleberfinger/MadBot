@@ -183,11 +183,12 @@ TODO:
 	Work on Game.getScoreboard().
 		- Use markdown formatting (see the help command in telegramBot.py for
 			an example).
-		- When getting cities (or any other text that will be displayed) from
-			players, call telebot.formatting.escape_markdown() before storing it.
-			Be sure not to escape that text again afterwards. Otherwise the
-			Telegram will return some kind of markdown error instead of sending
-			messages containing that text.
+
+	When getting cities (or any other text that will be displayed) from
+		players, call telebot.formatting.escape_markdown() before storing it.
+		Be sure not to escape that text again afterwards. Otherwise the
+		Telegram API will return some kind of markdown error instead of
+		sending messages containing that text.
 	
 	See notes above about classes.
 	

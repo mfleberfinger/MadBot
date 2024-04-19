@@ -26,20 +26,32 @@ def help(message):
 				+ "nuke - Launch a nuke. Use the form \"/nuke City Name\".\n"
 				+ "dismantle - Permanently dismantle a nuke and stop paying its upkeep cost.")
 		output += "\n\n" + telebot.formatting.mbold("testing...")
-		output += "\n\n" + telebot.formatting.mbold("Active Players")
-		output += "\nBob"
+		output += "\n\n\n" + telebot.formatting.munderline(telebot.formatting.mbold("Active Players"), False)
+		output += "\n\n" + telebot.formatting.mbold("Bob")
+		output += "\nMoney: $1,000,000"
+		output += "\nNukes: 0"
+		output += "\nCities:"
 		output += "\n\t\tNew York"
 		output += "\n\t\t" + telebot.formatting.mstrikethrough("Detroit")
 		output += "\n\t\t" + telebot.formatting.mstrikethrough("Washington")
-		output += "\n\n" + telebot.formatting.mbold("Eliminated Players")
-		output += "\nAlice " + telebot.formatting.escape_markdown("(bankrupt)")
+		output += "\n\n\n" + telebot.formatting.munderline(telebot.formatting.mbold("Eliminated Players"), False)
+		output += "\n\n" + telebot.formatting.mbold("Alice (bankrupt)")
+		output += telebot.formatting.escape_markdown("\nMoney: ($1,000,000)")
+		output += "\nNukes: 1"
+		output += "\nCities:"
 		output += "\n\t\tMoscow"
 		output += "\n\t\t" + telebot.formatting.mstrikethrough("Stalingrad")
 		output += "\n\t\t" + telebot.formatting.mstrikethrough("Kiev")
-		output += "\nEve " + telebot.formatting.escape_markdown("(annihilated)")
+		output += "\n\n" + telebot.formatting.mbold("Eve (annihilated)")
+		output += "\nMoney: $2,000,000"
+		output += "\nNukes: 0"
+		output += "\nCities:"
 		output += "\n\t\t" + telebot.formatting.mstrikethrough("Disneyland")
 		output += "\n\t\t" + telebot.formatting.mstrikethrough("Santa's Workshop")
 		output += "\n\t\t" + telebot.formatting.mstrikethrough("Narnia")
+		output += "\n\n\n" + telebot.formatting.munderline(telebot.formatting.mbold("Nukes In-Flight"), False)
+		output += "\n\n" + telebot.formatting.escape_markdown("Target: New York\nArrival: 2024-04-19 20:00:00 UTC\nOwner: Eve")
+		output += "\n\n" + telebot.formatting.escape_markdown("Target: Moscow\nArrival: 2024-04-19 20:30:45 UTC\nOwner: Bob")
 		bot.reply_to(message, output)
 
 # Receive all messages and parse them as commands if valid.

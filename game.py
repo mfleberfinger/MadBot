@@ -4,6 +4,7 @@ import nuke
 
 class Game:
 
+	TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 	# startNukes: Number of nukes each player starts with.
 	# startMoney: Amount of money each player starts with.
@@ -88,13 +89,13 @@ class Game:
 				targetPlayerName = self.eliminatedPlayers[targetPlayerId].playerName
 			newNuke = nuke.Nuke(attackingPlayerId, targetCity, datetime.datetime.now())
 			self.inFlight.append(newNuke)
+			arrivalTime = newNuke.launchTime + datetime.timedelta(seconds=self.flightTime)
 			output = ("LAUNCH WARNING: {0} has launched a missile at {1} (owned"
 				" by {2}). The missile will reach {1} at {3} {4}.")
 			# Perform any bookkeeping required by the Player object.
 			self.activePlayers[attackingPlayerId].launch()
 			output = output.format(attackingPlayerName, targetCity, targetPlayerName,
-				newNuke.launchTime + datetime.timedelta(seconds=self.flightTime),
-				self.tzname)
+				arrivalTime.strftime(Game.TIME_FORMAT), self.tzname)
 		return output
 
 	# Dismantle a nuke.
