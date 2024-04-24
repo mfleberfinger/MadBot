@@ -155,8 +155,9 @@ Classes:
 				-> nukes in flight
 					- owner
 					- target
-					- time to impact
-			+ update(self): Periodically called by the bot/state class or a timer.
+					- time of impact
+			+ update(self): Periodically called by the bot/state class or a timer
+				event.
 				-> Compares impact times in the inFlight collection to the
 					current time and, if an impact should occur during this
 					update, removes the impacting nukes from inFlight, removes
@@ -181,15 +182,15 @@ Classes:
 TODO:
 
 	Work on Game.getScoreboard().
-		- Use markdown formatting (see the help command in telegramBot.py for
-			an example).
+		- Started implementing. See game.py.
 
 	When getting cities (or any other text that will be displayed) from
 		players, call telebot.formatting.escape_markdown() before storing it.
 		Be sure not to escape that text again afterwards. Otherwise the
 		Telegram API will return some kind of markdown error instead of
 		sending messages containing that text.
-	
+		- Cities names should have a length limit to avoid breaking the
+			output formatting.
 	See notes above about classes.
 	
 	Document arguments to methods in the source files (see nuke.py for example).

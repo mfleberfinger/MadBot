@@ -1,6 +1,7 @@
 import datetime
-import player
 import nuke
+import player
+import telebot
 
 class Game:
 
@@ -113,8 +114,20 @@ class Game:
 			output = self.activePlayers[playerId].playerName + " has dismantled a weapon."
 		return output
 	
-	# Return a string describing the current start of the game.
+	# Returns a markdown formatted string describing the current state of the game.
 	# The Telegram bot will need to split this into multiple messages in some
 	#	cases.
 	def getScoreboard(self):
-
+		output = ""
+		# Iterate through active players and display their information.
+		for playerId in activePlayers
+			p = activePlayers[playerId]
+			output += telebot.formatting.munderline(telebot.formatting.mbold("Active Players"), False)
+			output += "\n\n" + telebot.formatting.mbold(p.playerName)
+			output += "\nMoney: "
+			output += "\nNukes: "
+			output += "\nCities:"
+			output += "\n\t\tNew York"
+		# Iterate through eliminated players and display their information.
+		# Iterate through nukes in flight and display their information.
+		return output

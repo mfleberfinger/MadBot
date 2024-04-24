@@ -10,6 +10,7 @@ class Player:
 		self.playerId = playerId
 		self.playerName = playerName
 		self.cities = cities
+		self.destroyedCities = list() # Cities will be moved here when destroyed.
 		self.nukes = nukes
 		self.money = money
 		# A string describing why the player was eliminated.
