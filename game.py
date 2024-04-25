@@ -1,7 +1,12 @@
 import datetime
+import locale
 import nuke
 import player
 import telebot
+
+# Used for easy currency formatting.
+# The locale code ("en_US.UTF-8") might be system specific. It works on Ubuntu.
+locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
 class Game:
 
@@ -111,7 +116,7 @@ class Game:
 			output = "You have nothing to dismantle."
 		else:
 			self.activePlayers[playerId].dismantle()
-			output = self.activePlayers[playerId].playerName + " has dismantled a weapon."
+			output = self.activePlayers[playerId].playerName + " has dismantled a missile."
 		return output
 	
 	# Returns a markdown formatted string describing the current state of the game.
@@ -120,14 +125,44 @@ class Game:
 	def getScoreboard(self):
 		output = ""
 		# Iterate through active players and display their information.
-		for playerId in activePlayers
-			p = activePlayers[playerId]
-			output += telebot.formatting.munderline(telebot.formatting.mbold("Active Players"), False)
+		output += telebot.formatting.munderline(telebot.formatting.mbold("Active Players"), False)
+		if len(self.activePlayers) == 0:
+			output += "\n\nNone"
+		for playerId in self.activePlayers:
+			p = self.activePlayers[playerId]
 			output += "\n\n" + telebot.formatting.mbold(p.playerName)
-			output += "\nMoney: "
-			output += "\nNukes: "
+			output += "\nMoney: " + telebot.formatting.escape_markdown(locale.currency(p.money, grouping=True))
+			output += "\nMissiles: " + str(p.nukes)
 			output += "\nCities:"
-			output += "\n\t\tNew York"
+			for city in p.cities:
+				output += "\n\t\t" + telebot.formatting.escape_markdown(city)
+			for city in p.destroyedCities:
+				output += "\n\t\t" + telebot.formatting.mstrikethrough(city)
 		# Iterate through eliminated players and display their information.
+		output += "\n\n\n" + telebot.formatting.munderline(telebot.formatting.mbold("Eliminated Players"), False)
+		if len(self.eliminatedPlayers) == 0:
+			output += "\n\nNone"
+		for playerId in self.eliminatedPlayers:
+			p = self.eliminatedPlayers[playerId]
+			output += "\n\n" + telebot.formatting.mbold(p.playerName + " " + p.eliminationCause)
+			output += "\nMoney: " + telebot.formatting.escape_markdown(locale.currency(p.money, grouping=True))
+			output += "\nMissiles: " + str(p.nukes)
+			output += "\nCities:"
+			for city in p.cities:
+				output += "\n\t\t" + telebot.formatting.escape_markdown(city)
+			for city in p.destroyedCities:
+				output += "\n\t\t" + telebot.formatting.mstrikethrough(city)
 		# Iterate through nukes in flight and display their information.
+		output += "\n\n\n" + telebot.formatting.munderline(telebot.formatting.mbold("Missiles In-Flight"), False)
+		if len(self.inFlight) == 0:
+			output += "\n\nNone"
+		nukeString = "Target: {0}\nArrival: {1} {2}\nOwner: {3}"
+		for nuke in self.inFlight:
+			if nuke.owner in self.activePlayers:
+				owner = self.activePlayers[nuke.owner]
+			else:
+				owner = self.activePlayers[nuke.owner]
+			arrivalTime = nuke.launchTime + datetime.timedelta(seconds=self.flightTime)
+			output += "\n\n" + telebot.formatting.escape_markdown(nukeString.format(nuke.target, 
+				arrivalTime.strftime(Game.TIME_FORMAT), self.tzname, owner.playerName))
 		return output

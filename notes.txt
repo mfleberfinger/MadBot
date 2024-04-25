@@ -184,13 +184,9 @@ TODO:
 	Work on Game.getScoreboard().
 		- Started implementing. See game.py.
 
-	When getting cities (or any other text that will be displayed) from
-		players, call telebot.formatting.escape_markdown() before storing it.
-		Be sure not to escape that text again afterwards. Otherwise the
-		Telegram API will return some kind of markdown error instead of
-		sending messages containing that text.
-		- Cities names should have a length limit to avoid breaking the
-			output formatting.
+	Cities names should have a length limit to avoid breaking the output
+		formatting.
+
 	See notes above about classes.
 	
 	Document arguments to methods in the source files (see nuke.py for example).
