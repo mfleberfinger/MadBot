@@ -23,6 +23,7 @@ class Game:
 		self.upkeepPeriod = upkeepPeriod	# How often upkeep is charged, in seconds.
 		self.upkeepCost = upkeepCost		# The cost per upkeep period of owning a nuke.
 		self.flightTime = flightTime		# How long a nuke takes to reach its target after launch, in seconds.
+		self.flightTimeDelta = datetime.timedelta(seconds=flightTime)	# Flight time in the format used by time math.
 		self.activePlayers = dict()			# Players remaining in the game.
 		self.eliminatedPlayers = dict()		# Players who have been eliminated.
 		self.cityOwners = dict()			# Player IDs, keyed by city name.
@@ -30,7 +31,7 @@ class Game:
 		self.inFlight = list()				# List of nukes in flight, owners, targets, and launch times.
 		self.gameOver = False				# True if the game has ended.
 		self.gameStarted = False			# True if the game has started, meaning no new players may join.
-		self.tzname = datetime.datetime.now().astimezone().tzname() # Time zone code (e.g. EDT, EST, UTC).
+		self.tzname = datetime.datetime.now().astimezone().tzname()	# Time zone code (e.g. EDT, EST, UTC).
 
 	# Add player to the game.
 	# playerId: Unique identifier for the new player.
@@ -57,7 +58,7 @@ class Game:
 			for city in cityNames:
 				self.cityOwners[city] = playerId
 			output = newPlayer.playerName + " has joined the game."
-		return output
+		return telebot.formatting.escape_markdown(output)
 	
 	# Close the game to new players and start playing.
 	def start(self):
@@ -95,14 +96,14 @@ class Game:
 				targetPlayerName = self.eliminatedPlayers[targetPlayerId].playerName
 			newNuke = nuke.Nuke(attackingPlayerId, targetCity, datetime.datetime.now())
 			self.inFlight.append(newNuke)
-			arrivalTime = newNuke.launchTime + datetime.timedelta(seconds=self.flightTime)
+			arrivalTime = newNuke.launchTime + self.flightTimeDelta
 			output = ("LAUNCH WARNING: {0} has launched a missile at {1} (owned"
 				" by {2}). The missile will reach {1} at {3} {4}.")
 			# Perform any bookkeeping required by the Player object.
 			self.activePlayers[attackingPlayerId].launch()
 			output = output.format(attackingPlayerName, targetCity, targetPlayerName,
 				arrivalTime.strftime(Game.TIME_FORMAT), self.tzname)
-		return output
+		return telebot.formatting.escape_markdown(output)
 
 	# Dismantle a nuke.
 	# The player for which to dismantle the nuke.
@@ -162,7 +163,62 @@ class Game:
 				owner = self.activePlayers[nuke.owner]
 			else:
 				owner = self.activePlayers[nuke.owner]
-			arrivalTime = nuke.launchTime + datetime.timedelta(seconds=self.flightTime)
+			arrivalTime = nuke.launchTime + self.flightTimeDelta
 			output += "\n\n" + telebot.formatting.escape_markdown(nukeString.format(nuke.target, 
 				arrivalTime.strftime(Game.TIME_FORMAT), self.tzname, owner.playerName))
 		return output
+	
+	# Should be called periodically to update the state of the game.
+	# Deducts money for upkeep, decides when missiles reach their targets and
+	# handles the result, eliminates players as needed, decides whether the
+	# game has ended, etc.
+	def update(self):
+		output = ""
+		output += self.__updateNukes()
+		output += self.__updateUpkeep()
+		output += self.__updateEliminations()
+		output += self.__updateEndgame()
+		return telebot.formatting.escape_markdown(output)
+	
+	# Check whether missiles have reached their targets, handle any bookkeeping
+	# associated with destruction of cities, and return related output.
+	def __updateNukes(self):
+		output = ""
+		# Iterate through in-flight missiles, decide whether they've arrived at
+		# their targets, and handle the effects if they have.
+		for missile in self.inFlight:
+			if (missile.launchTime + self.flightTimeDelta) >= datetime.datetime.now():
+				# Find the target city's owner.
+				cityOwnerId = self.cityOwners[missile.target]
+				if cityOwnerId in self.activePlayers:
+					cityOwner = self.activePlayers[cityOwnerId]
+				else:
+					cityOwner = self.eliminatedPlayers[cityOwnerId]
+				# Find the missile's owner.
+				if missile.owner in self.activePlayers:
+					missileOwner = self.activePlayers[missile.owner]
+				else:
+					missileOwner = self.eliminatedPlayers[missile.owner]
+				# If the city hasn't already been destroyed, move it to the
+				# owners destroyedCities list. If it has, include that in the
+				# output.
+				if missile.target in cityOwner.cities:
+					cityOwner.cities.remove(missile.target)
+					cityOwner.destroyedCities.append(missile.target)
+					output += "CITY DESTROYED: {0}'s missile destroyed {1}.\n"
+				else:
+					output += ("{0}'s missile made the crater formerly known "
+						" as {1} slightly deeper.\n")
+				output = output.format(missileOwner.playerName, missile.target)
+		return output
+
+	# Deduct upkeep costs and return related output.
+	def __updateUpkeep(self):
+
+	# Check for annihilation and bankruptcy, do related bookkeeping, and return
+	# related output.
+	def __updateEliminations():
+
+	# Check for the endgame conditions, end the game if appropriate, and return
+	# related output.
+	def __updateEndgame(self):

@@ -145,7 +145,7 @@ Classes:
 				launches a nuke.
 				-> Add a nuke to the inFlight collection.
 			+ dismantle(self, playerId): Called when a player dismantles a nuke.	[added]
-			+ getScoreboard(self): Returns a string showing  the current state
+			+ getScoreboard(self): Returns a string showing  the current state		[added]
 				of the game:
 				-> players
 					- active/eliminated
@@ -156,8 +156,8 @@ Classes:
 					- owner
 					- target
 					- time of impact
-			+ update(self): Periodically called by the bot/state class or a timer
-				event.
+			+ update(self): Periodically called by the bot or state class or a
+				timer event.
 				-> Compares impact times in the inFlight collection to the
 					current time and, if an impact should occur during this
 					update, removes the impacting nukes from inFlight, removes
@@ -181,11 +181,11 @@ Classes:
 
 TODO:
 
-	Work on Game.getScoreboard().
-		- Started implementing. See game.py.
+	Work on Game.update().
 
 	Cities names should have a length limit to avoid breaking the output
 		formatting.
+		- Enforce this (and any other input restrictions) in telegramBot.py.
 
 	See notes above about classes.
 	
