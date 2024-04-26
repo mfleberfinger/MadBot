@@ -144,7 +144,7 @@ class Game:
 			output += "\n\nNone"
 		for playerId in self.eliminatedPlayers:
 			p = self.eliminatedPlayers[playerId]
-			output += "\n\n" + telebot.formatting.mbold(p.playerName + " " + p.eliminationCause)
+			output += "\n\n" + telebot.formatting.mbold(p.playerName + " (" + p.eliminationCause + ")")
 			output += "\nMoney: " + telebot.formatting.escape_markdown(locale.currency(p.money, grouping=True))
 			output += "\nMissiles: " + str(p.nukes)
 			output += "\nCities:"
