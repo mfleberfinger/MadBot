@@ -21,6 +21,7 @@ class Game:
 		self.startNukes = startNukes		# Number of nukes each player starts with.
 		self.startMoney = startMoney		# Amount of money each player starts with.
 		self.upkeepPeriod = upkeepPeriod	# How often upkeep is charged, in seconds.
+		self.upkeepPeriodDelta = datetime.timedelta(seconds=self.upkeepPeriod)	# Upkeep period in the format used by time math.
 		self.upkeepCost = upkeepCost		# The cost per upkeep period of owning a nuke.
 		self.flightTime = flightTime		# How long a nuke takes to reach its target after launch, in seconds.
 		self.flightTimeDelta = datetime.timedelta(seconds=flightTime)	# Flight time in the format used by time math.
@@ -173,6 +174,10 @@ class Game:
 	# handles the result, eliminates players as needed, decides whether the
 	# game has ended, etc.
 	def update(self):
+		if not self.gameStarted:
+			raise RuntimeError("Game.Update() was called without starting the game.")
+		elif self.gameOver:
+			raise RuntimeError("Game.Update() was called after the game ended.")
 		output = ""
 		output += self.__updateNukes()
 		output += self.__updateUpkeep()
@@ -186,8 +191,11 @@ class Game:
 		output = ""
 		# Iterate through in-flight missiles, decide whether they've arrived at
 		# their targets, and handle the effects if they have.
+		toRemove = list()
+		i = 0
 		for missile in self.inFlight:
-			if (missile.launchTime + self.flightTimeDelta) >= datetime.datetime.now():
+			if (missile.launchTime + self.flightTimeDelta) <= datetime.datetime.now():
+				toRemove.append(i)
 				# Find the target city's owner.
 				cityOwnerId = self.cityOwners[missile.target]
 				if cityOwnerId in self.activePlayers:
@@ -210,15 +218,123 @@ class Game:
 					output += ("{0}'s missile made the crater formerly known "
 						" as {1} slightly deeper.\n")
 				output = output.format(missileOwner.playerName, missile.target)
+			i += 1
+		for j in reversed(toRemove):
+			del self.inFlight[j]
+		# Remove trailing whitespace (including newlines).
+		output = output.rstrip()
 		return output
 
 	# Deduct upkeep costs and return related output.
 	def __updateUpkeep(self):
+		output = ""
+		if datetime.datetime.now() >= self.lastUpkeepTime + self.upkeepPeriodDelta:
+			self.lastUpkeepTime = datetime.datetime.now()
+			for playerId in self.activePlayers:
+				p = self.activePlayers[playerId]
+				totalUpkeep = p.nukes * self.upkeepCost
+				p.money -= totalUpkeep
+				output += ("{0} pays {1} in upkeep costs for {2} missiles and is "
+					"left with {3}.\n")
+				output = output.format(p.playerName, locale.currency(totalUpkeep, grouping=True),
+					p.nukes, local.currency(p.money))
+		# Remove trailing whitespace (including newlines).
+		output = output.rstrip()
+		return output
 
 	# Check for annihilation and bankruptcy, do related bookkeeping, and return
 	# related output.
-	def __updateEliminations():
+	def __updateEliminations(self):
+		output = ""
+		# Copy the dictionary's keys into a new list so we can iterate through
+		#	the dictionary while deleting from it.
+		keys = list(self.activePlayers.keys())
+		for playerId in keys:
+			p = self.activePlayers[playerId]
+			if len(p.cities) <= 0:
+				p.eliminationCause = "annihilated"
+				self.eliminatedPlayers[playerId] = self.activePlayers.pop(playerId)
+				output += p.playerName + " has been annihilated.\n"
+			elif p.money <= 0:
+				p.eliminationCause = "bankrupt"
+				self.eliminatedPlayers[playerId] = self.activePlayers.pop(playerId)
+				output += p.playerName + "'s economy has collapsed.\n"
+		# Remove trailing whitespace (including newlines).
+		output = output.rstrip()
+		return output
 
 	# Check for the endgame conditions, end the game if appropriate, and return
 	# related output.
 	def __updateEndgame(self):
+		output = ""
+		noNukes = False
+		# Determine whether there are any nukes left in the game.
+		if len(self.inFlight) == 0:
+			noNukes = True
+			keys = list(self.activePlayers.keys())
+			i = 0
+			while noNukes and i < len(keys):
+				if self.activePlayers[keys[i]].nukes > 0:
+					noNukes = False
+				i += 1
+		# The game ends when only one player is left and there are no nukes in
+		# flight, or when there are no nukes remaining in flight or in stockpiles.
+		if (len(self.activePlayers) <= 1 and len(inFlight) == 0) or noNukes:
+			self.gameOver = True
+			output += "GAME OVER\n\n"
+			# If no players remain, the game ends in a draw.
+			if len(self.activePlayers) == 0:
+				output += "EXTINCTION... Oh well, humanity had a good run."
+			# If only one player is left standing, that player wins.
+			elif len(self.activePlayers) == 1:
+				output += "VICTORY: {0} wins!"
+				output = output.format(next(iter(d.values)).playerName)
+			else:
+				possibleWinners = list(self.activePlayers.values)
+				# If two or more players remain, the player with the most cities
+				# wins.
+				maxCities = 0
+				for p in possibleWinners:
+					if len(p.cities) > maxCities:
+						maxCities = len(p.cities)
+				toRemove = list()
+				for p in possibleWinners:
+					if len(p.cities) < maxCities:
+						toRemove.append(p.playerId)
+				i = 0
+				while i < len(possibleWinners):
+					if possibleWinners[i].playerId in toRemove:
+						del possibleWinners[i]
+					else:
+						i += 1
+				# If two or more remaining players hold the same number of
+				# cities, the player with the most money remaining out of the
+				# players with the most cities wins.
+				if len(possibleWinners) > 1:
+					maxMoney = 0
+					for p in possibleWinners:
+						if p.money > maxMoney:
+							maxMoney = p.money
+					toRemove = list()
+					for p in possibleWinners:
+						if p.money < maxMoney:
+							toRemove.append(p.playerId)
+					i = 0
+					while i < len(possibleWinners):
+						if possibleWinners[i].playerId in toRemove:
+							del possibleWinners[i]
+						else:
+							i += 1
+				# If two or more remaining players have the same number of cities
+				# and the same amount of money, the game ends in a draw.
+				if len(possibleWinners) > 1:
+					output += "Draw between the following players: "
+					for p in possibleWinners:
+						output  += p.playerName + "\n"
+					output.rstrip("\n")
+				else:
+					output += "VICTORY: {0} wins!"
+					output = output.format(possibleWinners[0].playerName)
+		# Remove trailing whitespace (including newlines).
+		output = output.rstrip()
+		return output

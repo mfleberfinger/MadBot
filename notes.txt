@@ -1,7 +1,5 @@
 __Mutually Assured Destruction__
 
-The only winning move is... to win?
-
 Summary
 	- Each player starts with some number of cities, some number of nukes, and
 		some amount of money..
@@ -22,7 +20,7 @@ Summary
 	- A player can launch a nuke at any target at any time.
 	- The launch command is sent to the bot in the group chat and the bot
 		announces when the nuke will strike its target (default to 24 hours).
-		The bot will probably also makes announcements every few hours. The
+		The bot will probably also make announcements every few hours. The
 		targeted player may still choose to launch a nuke at any time.
 		+ Default to 24 hours.
 		+ Might make this configurable on new game.
@@ -31,6 +29,7 @@ Summary
 	- The game ends when there are no nukes in flight or held by any remaining
 		players or when there is only one player left standing.
 	- When the game ends:
+		+ If no players remain, the game ends in a draw.
 		+ If only one player is left standing, that player wins.
 		+ If two or more players remain, the player with the most cities wins.
 		+ If two or more remaining players hold the same number of cities, the
@@ -181,7 +180,7 @@ Classes:
 
 TODO:
 
-	Work on Game.update().
+	Test Game.update().
 
 	Cities names should have a length limit to avoid breaking the output
 		formatting.
