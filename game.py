@@ -183,6 +183,8 @@ class Game:
 		output += self.__updateUpkeep()
 		output += self.__updateEliminations()
 		output += self.__updateEndgame()
+		# Remove trailing whitespace (including newlines).
+		output = output.rstrip()
 		return telebot.formatting.escape_markdown(output)
 	
 	# Check whether missiles have reached their targets, handle any bookkeeping
@@ -221,8 +223,6 @@ class Game:
 			i += 1
 		for j in reversed(toRemove):
 			del self.inFlight[j]
-		# Remove trailing whitespace (including newlines).
-		output = output.rstrip()
 		return output
 
 	# Deduct upkeep costs and return related output.
@@ -238,8 +238,6 @@ class Game:
 					"left with {3}.\n")
 				output = output.format(p.playerName, locale.currency(totalUpkeep, grouping=True),
 					p.nukes, local.currency(p.money))
-		# Remove trailing whitespace (including newlines).
-		output = output.rstrip()
 		return output
 
 	# Check for annihilation and bankruptcy, do related bookkeeping, and return
@@ -259,8 +257,6 @@ class Game:
 				p.eliminationCause = "bankrupt"
 				self.eliminatedPlayers[playerId] = self.activePlayers.pop(playerId)
 				output += p.playerName + "'s economy has collapsed.\n"
-		# Remove trailing whitespace (including newlines).
-		output = output.rstrip()
 		return output
 
 	# Check for the endgame conditions, end the game if appropriate, and return
@@ -279,16 +275,16 @@ class Game:
 				i += 1
 		# The game ends when only one player is left and there are no nukes in
 		# flight, or when there are no nukes remaining in flight or in stockpiles.
-		if (len(self.activePlayers) <= 1 and len(inFlight) == 0) or noNukes:
+		if (len(self.activePlayers) <= 1 and len(self.inFlight) == 0) or noNukes:
 			self.gameOver = True
-			output += "GAME OVER\n\n"
+			output += "\nGAME OVER\n\n"
 			# If no players remain, the game ends in a draw.
 			if len(self.activePlayers) == 0:
 				output += "EXTINCTION... Oh well, humanity had a good run."
 			# If only one player is left standing, that player wins.
 			elif len(self.activePlayers) == 1:
 				output += "VICTORY: {0} wins!"
-				output = output.format(next(iter(d.values)).playerName)
+				output = output.format(next(iter(self.activePlayers.values())).playerName)
 			else:
 				possibleWinners = list(self.activePlayers.values)
 				# If two or more players remain, the player with the most cities
@@ -335,6 +331,4 @@ class Game:
 				else:
 					output += "VICTORY: {0} wins!"
 					output = output.format(possibleWinners[0].playerName)
-		# Remove trailing whitespace (including newlines).
-		output = output.rstrip()
 		return output
