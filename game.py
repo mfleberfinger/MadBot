@@ -79,7 +79,7 @@ class Game:
 		output = "Error in Game.launch()."
 		# Make sure the player exists and hasn't been eliminated.
 		if attackingPlayerId not in self.activePlayers:
-			output = "Only players who have not been eliminated may do that."
+			output = "Only active players may do that."
 		# Make sure the target exists.
 		elif targetCity not in self.cityOwners:
 			output = "There is no city called " + targetCity + "."
@@ -112,7 +112,7 @@ class Game:
 		output = "Error in Game.dismantle()."
 		# Make sure the player exists and hasn't been eliminated.
 		if playerId not in self.activePlayers:
-			output = "Only players who have not been eliminated may do that."
+			output = "Only active players may do that."
 		# Make sure the player has a nuke to dismantle.
 		elif self.activePlayers[playerId].nukes < 1:
 			output = "You have nothing to dismantle."
@@ -237,7 +237,7 @@ class Game:
 				output += ("{0} pays {1} in upkeep costs for {2} missiles and is "
 					"left with {3}.\n")
 				output = output.format(p.playerName, locale.currency(totalUpkeep, grouping=True),
-					p.nukes, local.currency(p.money))
+					p.nukes, locale.currency(p.money, grouping=True))
 		return output
 
 	# Check for annihilation and bankruptcy, do related bookkeeping, and return
@@ -280,13 +280,13 @@ class Game:
 			output += "\nGAME OVER\n\n"
 			# If no players remain, the game ends in a draw.
 			if len(self.activePlayers) == 0:
-				output += "EXTINCTION... Oh well, humanity had a good run."
+				output += "ALL PLAYERS ELIMINATED... The only winning move is not to play."
 			# If only one player is left standing, that player wins.
 			elif len(self.activePlayers) == 1:
 				output += "VICTORY: {0} wins!"
 				output = output.format(next(iter(self.activePlayers.values())).playerName)
 			else:
-				possibleWinners = list(self.activePlayers.values)
+				possibleWinners = list(self.activePlayers.values())
 				# If two or more players remain, the player with the most cities
 				# wins.
 				maxCities = 0
@@ -324,7 +324,7 @@ class Game:
 				# If two or more remaining players have the same number of cities
 				# and the same amount of money, the game ends in a draw.
 				if len(possibleWinners) > 1:
-					output += "Draw between the following players: "
+					output += "Draw between the following players:\n"
 					for p in possibleWinners:
 						output  += p.playerName + "\n"
 					output.rstrip("\n")
