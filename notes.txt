@@ -180,7 +180,7 @@ Classes:
 
 TODO:
 
-	Test Game.update().
+	Work on telegramBot (and code to call Game.update()).
 
 	Cities names should have a length limit to avoid breaking the output
 		formatting.
