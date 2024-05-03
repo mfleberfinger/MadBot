@@ -1,3 +1,4 @@
+import game
 import os
 import pickle
 
@@ -25,8 +26,8 @@ class State:
 		self.saveName = saveName
 		self.game = None
 	
-	def newGame(self, upkeepPeriod, upkeepCost, flightTime):
-		self.game = Game(upkeepPeriod, upkeepCost, flightTime)
+	def newGame(self, startNukes, startMoney, upkeepPeriod, upkeepCost, flightTime):
+		self.game = Game(startNukes, startMoney, upkeepPeriod, upkeepCost, flightTime)
 	
 	def endGame(self)
 		self.game = None

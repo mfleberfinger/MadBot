@@ -181,6 +181,25 @@ Classes:
 TODO:
 
 	Work on telegramBot (and code to call Game.update()).
+		- How do I call Game.update()?
+			+ Launch a new thread and poll there?
+				-> Would need to have anything that accesses variables used by
+					update() take out locks.
+			+ Use some kind of python timer event or scheduling library?
+				-> This might have the same need for locks that the thread would
+					have.
+			+ Use some built in timer event in PyTelegramBotAPI?
+				-> If there's something that will automatically call a method
+					on a timer/schedule, this would probably be ideal.
+				-> Can I create a custom handler and let infinity_polling() call
+					it?
+					- https://pytba.readthedocs.io/en/latest/sync_version/index.html#telebot.Handler
+			+ If PyTelegramBotAPI has a method that allows me to decide when it
+				polls/updates, I could stop using infinity_polling() and call
+				that method in a loop where I also call Game.update().
+				-> https://pytba.readthedocs.io/en/latest/sync_version/index.html#telebot.TeleBot.get_updates
+				-> https://pytba.readthedocs.io/en/latest/sync_version/index.html#telebot.TeleBot.process_new_updates
+				-> https://pytba.readthedocs.io/en/latest/types.html#telebot.types.Update
 
 	Cities names should have a length limit to avoid breaking the output
 		formatting.
