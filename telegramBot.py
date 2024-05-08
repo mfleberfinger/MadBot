@@ -1,5 +1,4 @@
 #!usr/bin/env python
-import state
 import re
 import state
 import sys
@@ -14,6 +13,7 @@ MONEY = 1000000000		# Amount of money each player starts with ($1 billion).
 UPKEEP_PERIOD = 86400	# How often upkeep is charged, in seconds.
 UPKEEP_COST = 50000000	# Upkeep cost of a single nuke ($50 million).
 FLIGHT_TIME = 86400		# How long a nuke takes to reach its target, in seconds.
+CITIES = 3				# Number of cities each player starts with.
 
 # Dictionary of State objects keyed by chat ID (a number).
 stateTable = dict()
@@ -54,22 +54,56 @@ def handle_command(message):
 		s.newGame(NUKES, MONEY, UPKEEP_PERIOD, UPKEEP_COST, FLIGHT_TIME)
 		output = "New game created. Players may join now."
 	elif cmdSplit[0] == "join":
-		# TODO: Write a join() function and do input validation on the city names.
-		# For example, make sure the name has a maximum length and isn't something
-		# trollish, like being all spaces or having more than one space between
-		# words. Probably just use a regex to convert any instance of one or
-		# more whitespace characters to a single space character.
+		output = joinGame(s, cmdSplit[1], message.from_user)
 	elif cmdSplit[0] == "startgame":
+		output = s.game.start()
 	elif cmdSplit[0] == "scoredboard":
+		output = s.game.scoreboard()
 	elif cmdSplit[0] == "nuke":
+		output = s.game.launch(message.from_user.id, cmdSplit[1])
 	elif cmdSplit[0] == "dismantle":
-	
+		output = s.game.dismantle(message.from_user.id)
+
 	if output != "":
 		bot.reply_to(message, output)
 	#print("output = " + output)
 
 	# Save after every command.
 	s.save()
+
+# s: A state object.
+# citiesString: A semicolon delimited string containing city names.
+# user: A telebot.types.User object representing the user sending the message.
+def joinGame(s, citiesString, user):
+	output = ""
+	playerId = user.id
+	playerName = user.username
+	# Telebot's docs say username is optional but first name is required.
+	# If username was None or empty, use the user's first name.
+	if not playerName:
+		playerName = user.first_name
+	# Split the cities into a list and do input validation.
+	cities = citiesString.split(";")
+
+	# TODO: Figure out how long a city name can be before it interferes with
+	# 		output formatting. Then, reject any name longer than that.
+	for i in reversed(range(0, len(cities))):
+		c = cities[i]
+		# Replace all whitespace characters with single spaces.
+		c = re.sub("\s+", " ", c)
+		# Remove surrounding whitespace.
+		c = c.strip()
+		if not c:
+			# If there wasn't anything valid in this city name, remove it from the list.
+			del cities[i]
+		else:
+			# Otherwise, use the sanitized name.
+			cities[i] = c
+	if len(cities) < CITIES:
+		output = "{0} cities are required.".format(CITIES)
+	else:
+		output = s.game.join(playerId, playerName, cities)
+	return output
 
 # Load state for all chats for which the bot has a file.
 # TODO: Load state
@@ -93,8 +127,11 @@ while (True):
 			if s.game.gameStarted and not s.game.gameOver:
 				output = s.game.update()
 				if output != "":
+					# Split the output so it fits into Telegram messages.
 					for string in telebot.util.smart_split(output):
 						bot.send_message(chatId, string)
+					# Something happened, so we'll save this state.
+					s.save()
 	except:
 		# Print exception info.
 		print("\n{0}: {1}\n".format(sys.exc_info()[0], sys.exc_info()[1]))
