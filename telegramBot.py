@@ -16,7 +16,8 @@ FLIGHT_TIME = 86400		# How long a nuke takes to reach its target, in seconds.
 CITIES = 3				# Number of cities each player starts with.
 
 # Dictionary of State objects keyed by chat ID (a number).
-stateTable = dict()
+# Load state for all chats for which the bot has a file.
+stateTable = state.loadAll()
 
 with open("token", "r") as f:
 	bot = telebot.TeleBot(f.read(), parse_mode="MarkdownV2")
@@ -105,8 +106,6 @@ def joinGame(s, citiesString, user):
 		output = s.game.join(playerId, playerName, cities)
 	return output
 
-# Load state for all chats for which the bot has a file.
-# TODO: Load state
 
 # Get any updates waiting on Telegram's servers.
 updates = bot.get_updates()
