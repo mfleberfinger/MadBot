@@ -31,12 +31,12 @@ class State:
 		stateTable = dict()
 		for name in filenames:
 			if name.endswith(State.FILE_EXTENSION):
-				saveName = re.sub(regexExtension, "", name)
-				stateTable[saveName] = load(saveName)
+				saveName = re.sub(State.regexExtension, "", name)
+				stateTable[saveName] = State.load(saveName)
 		return stateTable
 					
 
-	def save(state):
+	def save(self):
 		with open(State.SAVE_DIRECTORY + self.saveName + State.FILE_EXTENSION, "w+b") as f:
 			return pickle.dump(self, f)
 	
@@ -45,7 +45,7 @@ class State:
 		self.game = None
 	
 	def newGame(self, startNukes, startMoney, upkeepPeriod, upkeepCost, flightTime):
-		self.game = Game(startNukes, startMoney, upkeepPeriod, upkeepCost, flightTime)
+		self.game = game.Game(startNukes, startMoney, upkeepPeriod, upkeepCost, flightTime)
 	
-	def endGame(self)
+	def endGame(self):
 		self.game = None

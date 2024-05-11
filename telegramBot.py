@@ -1,11 +1,14 @@
 #!usr/bin/env python
 import re
 import state
-import sys
 import telebot
 import time
+import traceback
 
 BOT_NAME = "@MutuallyAssuredDestruction_bot"
+
+# Format for timestamps used in exception messages printed on the server.
+TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 # Default values for game.
 NUKES = 5				# Number of nukes each player starts with.
@@ -17,10 +20,12 @@ CITIES = 3				# Number of cities each player starts with.
 
 # Dictionary of State objects keyed by chat ID (a number).
 # Load state for all chats for which the bot has a file.
-stateTable = state.loadAll()
+stateTable = state.State.loadAll()
 
 with open("token", "r") as f:
-	bot = telebot.TeleBot(f.read(), parse_mode="MarkdownV2")
+	# Using unthreaded bot so I can catch and report exceptions the message
+	# handlers may throw.
+	bot = telebot.TeleBot(f.read(), parse_mode="MarkdownV2", threaded=False)
 
 @bot.message_handler(commands = ["help"])
 def help(message):
@@ -36,38 +41,62 @@ def help(message):
 # Receive all messages and parse them as commands if valid.
 @bot.message_handler(commands = ["newgame", "join", "startgame", "scoreboard", "nuke", "dismantle"])
 def handle_command(message):
-	chatId = message.chat.id
+	chatId = str(message.chat.id)
 	output = ""
 	if chatId not in stateTable:
 		# Create or load a state, depending on whether a file exists for this chat.
-		stateTable[chatId] = state.create(str(chatId))
+		stateTable[chatId] = state.State.create(chatId)
 	s = stateTable[chatId]
 	cmd = message.text
 	cmd = re.sub(BOT_NAME, "", cmd)
 	# Make commands case-insensitive, strip surrounding whitespace, and split
 	# into command and arguments at spaces.
 	cmd = cmd.lower().strip()
+	cmd = cmd.lstrip("/")
 	cmdSplit = cmd.split(" ", 1)
 
+	#print("cmdSplit[0] = {0}".format(cmdSplit[0]))
+	noGameOutput = telebot.formatting.escape_markdown("You must create a game to do that.")
 	if cmdSplit[0] == "newgame":
 		# TODO: This should require some kind of confirmation from a user to
 		#	avoid accidentally resetting a game in progress.
 		s.newGame(NUKES, MONEY, UPKEEP_PERIOD, UPKEEP_COST, FLIGHT_TIME)
-		output = "New game created. Players may join now."
+		output = telebot.formatting.escape_markdown("New game created. Players may join now.")
 	elif cmdSplit[0] == "join":
-		output = joinGame(s, cmdSplit[1], message.from_user)
+		if s.game:
+			if len(cmdSplit) > 1:
+				output = joinGame(s, cmdSplit[1], message.from_user)
+			else:
+				output = telebot.formatting.escape_markdown("You must list your city names when joining.")
+		else:
+			output = noGameOutput
 	elif cmdSplit[0] == "startgame":
-		output = s.game.start()
-	elif cmdSplit[0] == "scoredboard":
-		output = s.game.scoreboard()
+		if s.game:
+			output = s.game.start()
+		else:
+			output = noGameOutput
+	elif cmdSplit[0] == "scoreboard":
+		if s.game:
+			output = s.game.scoreboard()
+		else:
+			output = noGameOutput
 	elif cmdSplit[0] == "nuke":
-		output = s.game.launch(message.from_user.id, cmdSplit[1])
+		if s.game:
+			if len(cmdSplit) > 1:
+				output = s.game.launch(message.from_user.id, cmdSplit[1])
+			else:
+				output = telebot.formatting.escape_markdown("This requires a target. Try \"/nuke City Name\"")
+		else:
+			output = noGameOutput
 	elif cmdSplit[0] == "dismantle":
-		output = s.game.dismantle(message.from_user.id)
+		if s.game:
+			output = s.game.dismantle(message.from_user.id)
+		else:
+			output = noGameOutput
 
 	if output != "":
 		bot.reply_to(message, output)
-	#print("output = " + output)
+	print("output = " + output)
 
 	# Save after every command.
 	s.save()
@@ -123,7 +152,7 @@ while (True):
 		# in progress.
 		for chatId in stateTable:
 			s = stateTable[chatId]
-			if s.game.gameStarted and not s.game.gameOver:
+			if s.game and s.game.gameStarted and not s.game.gameOver:
 				output = s.game.update()
 				if output != "":
 					# Split the output so it fits into Telegram messages.
@@ -131,7 +160,11 @@ while (True):
 						bot.send_message(chatId, string)
 					# Something happened, so we'll save this state.
 					s.save()
-	except:
-		# Print exception info.
-		print("\n{0}: {1}\n".format(sys.exc_info()[0], sys.exc_info()[1]))
-
+	except Exception as e:
+		# There doesn't seem to be a way to find out which update caused an exception...
+		# Throw out all of the updates we were trying to process. This will affect
+		# all groups using the bot if any one of them causes an exception.
+		if len(updates) > 0:
+			updates = bot.get_updates(updates[-1].update_id + 1)
+		print("Exception occurred at {0} UTC...".format(time.strftime(TIME_FORMAT, time.gmtime())))
+		print(traceback.format_exc())
