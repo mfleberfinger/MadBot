@@ -206,8 +206,6 @@ Cities names should have a length limit to avoid breaking the output
 TODO:
 	
 	Test the bot in Telegram. Address the TODOs in telegramBot.py afterwards.
-		- Need to add markdown escaping to output from the joinGame() method in
-			telegramBot.py.
 
 	
 	Search the .py files for "TODO" comments.

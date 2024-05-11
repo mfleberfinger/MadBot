@@ -13,9 +13,13 @@ TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 # Default values for game.
 NUKES = 5				# Number of nukes each player starts with.
 MONEY = 1000000000		# Amount of money each player starts with ($1 billion).
-UPKEEP_PERIOD = 86400	# How often upkeep is charged, in seconds.
+#TODO: Uncomment this.
+#UPKEEP_PERIOD = 86400	# How often upkeep is charged, in seconds.
+UPKEEP_PERIOD = 600
 UPKEEP_COST = 50000000	# Upkeep cost of a single nuke ($50 million).
-FLIGHT_TIME = 86400		# How long a nuke takes to reach its target, in seconds.
+#TODO: Uncomment this.
+#FLIGHT_TIME = 86400		# How long a nuke takes to reach its target, in seconds.
+FLIGHT_TIME = 600
 CITIES = 3				# Number of cities each player starts with.
 
 # Dictionary of State objects keyed by chat ID (a number).
@@ -29,7 +33,33 @@ with open("token", "r") as f:
 
 @bot.message_handler(commands = ["help"])
 def help(message):
-		output = telebot.formatting.escape_markdown("help - Send the help message.\n"
+		output = telebot.formatting.escape_markdown(
+				"How to play the game of nuclear war..."
+				+ "\n\n"
+				+ "Each player starts with a set number of missiles and cities,"
+				+ " as well as a set amount of money."
+				+ "\n\n"
+				+ "Players may launch a missile at any city in the game at any"
+				+ " time. Missiles take time to reach their targets, allowing"
+				+ " targeted players to respond. When a missile reaches its"
+				+ " target, the targeted city is destroyed. If a player loses all"
+				+ " of their cities, that player is eliminated."
+				+ "\n\n"
+				+ "On a set schedule, each player will pay an upkeep cost for"
+				+ " each missile in their arsenal. If a player runs out of money,"
+				+ " that player is eliminated. A missile may be dismantled at any"
+				+ " time to eliminate its upkeep cost. Launching a missile will"
+				+ " also eliminate its upkeep cost."
+				+ "\n\n"
+				+ "The game ends either when no more missiles remain (whether in"
+				+ " arsenals or in flight) or when only one player is left standing"
+				+ " and there are no more missiles in flight."
+				+ "\n\n"
+				+ "The last player standing is the winner."
+				+ "\n\n\n"
+				+ "Commands..."
+				+ "\n\n"
+				+ "help - Send the help message.\n"
 				+ "newgame - Create a new game.\n"
 				+ "join - Join the game. Usage: \"/join my city's name; another city's name; a third city's name\n"
 				+ "startgame - Start the game when all players are ready.\n"
@@ -39,7 +69,7 @@ def help(message):
 		bot.reply_to(message, output)
 
 # Receive all messages and parse them as commands if valid.
-@bot.message_handler(commands = ["newgame", "join", "startgame", "scoreboard", "nuke", "dismantle"])
+@bot.message_handler(commands = ["test", "newgame", "join", "startgame", "scoreboard", "nuke", "dismantle"])
 def handle_command(message):
 	chatId = str(message.chat.id)
 	output = ""
@@ -55,11 +85,21 @@ def handle_command(message):
 	cmd = cmd.lstrip("/")
 	cmdSplit = cmd.split(" ", 1)
 
-	#print("cmdSplit[0] = {0}".format(cmdSplit[0]))
+	# TODO: Comment out this if block and the "test" command in the
+	# bot.message_handler decorator above.
+	if cmdSplit[0] == "test":
+		# test {playerName} {command} {arguments}
+		cmdSplit = cmdSplit[1].split(" ", 1)
+		message.from_user.id = cmdSplit[0]
+		message.from_user.username = cmdSplit[0]
+		cmdSplit = cmdSplit[1].split(" ", 1)
+
 	noGameOutput = telebot.formatting.escape_markdown("You must create a game to do that.")
 	if cmdSplit[0] == "newgame":
 		# TODO: This should require some kind of confirmation from a user to
 		#	avoid accidentally resetting a game in progress.
+		#	Probably just add an optional "force" argument and ask for it if an
+		#	unfinished game (gameOver == False) exists.
 		s.newGame(NUKES, MONEY, UPKEEP_PERIOD, UPKEEP_COST, FLIGHT_TIME)
 		output = telebot.formatting.escape_markdown("New game created. Players may join now.")
 	elif cmdSplit[0] == "join":
@@ -77,7 +117,7 @@ def handle_command(message):
 			output = noGameOutput
 	elif cmdSplit[0] == "scoreboard":
 		if s.game:
-			output = s.game.scoreboard()
+			output = s.game.getScoreboard()
 		else:
 			output = noGameOutput
 	elif cmdSplit[0] == "nuke":
@@ -94,9 +134,9 @@ def handle_command(message):
 		else:
 			output = noGameOutput
 
+	print("output = " + output)
 	if output != "":
 		bot.reply_to(message, output)
-	print("output = " + output)
 
 	# Save after every command.
 	s.save()
@@ -130,7 +170,10 @@ def joinGame(s, citiesString, user):
 			# Otherwise, use the sanitized name.
 			cities[i] = c
 	if len(cities) < CITIES:
-		output = "{0} cities are required.".format(CITIES)
+		output = ("{0} cities are required. Remember to separate city names with"
+					+ " semicolons. For example \"/join New York; Boston;"
+					+ " San Francisco\"")
+		output = telebot.formatting.escape_markdown(output.format(CITIES))
 	else:
 		output = s.game.join(playerId, playerName, cities)
 	return output

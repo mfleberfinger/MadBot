@@ -70,15 +70,24 @@ class Game:
 			self.lastUpkeepTime = datetime.datetime.now()
 			self.gameStarted = True
 			output = "The game has started. Welcome to the Cold War."
-		return output
+		elif self.gameStarted:
+			output = "The game has already started."
+		return telebot.formatting.escape_markdown(output)
 	
 	# Called when a player launches a nuke.
 	# attackingPlayerId: Unique ID of the player launching the nuke.
 	# targetCity: Name of the targeted city.
 	def launch(self, attackingPlayerId, targetCity):
 		output = "Error in Game.launch()."
+		# Make sure the game has started.
+		if not self.gameStarted:
+			output = ("You can't do that before the game has started. Use /startgame"
+						+ " to close the game to new players and start playing.")
+		# Make sure the game hasn't ended.
+		elif self.gameOver:
+			output = "The game has already ended."
 		# Make sure the player exists and hasn't been eliminated.
-		if attackingPlayerId not in self.activePlayers:
+		elif attackingPlayerId not in self.activePlayers:
 			output = "Only active players may do that."
 		# Make sure the target exists.
 		elif targetCity not in self.cityOwners:
@@ -110,8 +119,15 @@ class Game:
 	# The player for which to dismantle the nuke.
 	def dismantle(self, playerId):
 		output = "Error in Game.dismantle()."
+		# Make sure the game has started.
+		if not self.gameStarted:
+			output = ("You can't do that before the game has started. Use /startgame"
+						+ " to close the game to new players and start playing.")
+		# Make sure the game hasn't ended.
+		elif self.gameOver:
+			output = "The game has already ended."
 		# Make sure the player exists and hasn't been eliminated.
-		if playerId not in self.activePlayers:
+		elif playerId not in self.activePlayers:
 			output = "Only active players may do that."
 		# Make sure the player has a nuke to dismantle.
 		elif self.activePlayers[playerId].nukes < 1:
@@ -119,7 +135,7 @@ class Game:
 		else:
 			self.activePlayers[playerId].dismantle()
 			output = self.activePlayers[playerId].playerName + " has dismantled a missile."
-		return output
+		return telebot.formatting.escape_markdown(output)
 	
 	# Returns a markdown formatted string describing the current state of the game.
 	# The Telegram bot will need to split this into multiple messages in some
