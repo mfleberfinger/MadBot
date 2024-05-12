@@ -13,13 +13,11 @@ TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 # Default values for game.
 NUKES = 5				# Number of nukes each player starts with.
 MONEY = 1000000000		# Amount of money each player starts with ($1 billion).
-#TODO: Uncomment this.
-#UPKEEP_PERIOD = 86400	# How often upkeep is charged, in seconds.
-UPKEEP_PERIOD = 600
+UPKEEP_PERIOD = 86400	# How often upkeep is charged, in seconds.
+#UPKEEP_PERIOD = 600
 UPKEEP_COST = 50000000	# Upkeep cost of a single nuke ($50 million).
-#TODO: Uncomment this.
-#FLIGHT_TIME = 86400		# How long a nuke takes to reach its target, in seconds.
-FLIGHT_TIME = 600
+FLIGHT_TIME = 86400		# How long a nuke takes to reach its target, in seconds.
+#FLIGHT_TIME = 600
 CITIES = 3				# Number of cities each player starts with.
 
 # Dictionary of State objects keyed by chat ID (a number).
