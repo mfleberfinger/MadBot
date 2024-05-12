@@ -134,7 +134,7 @@ def handle_command(message):
 		else:
 			output = noGameOutput
 
-	print("output = " + output)
+	#print("output = " + output)
 	if output != "":
 		bot.reply_to(message, output)
 
