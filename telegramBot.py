@@ -27,7 +27,7 @@ stateTable = state.State.loadAll()
 with open("token", "r") as f:
 	# Using unthreaded bot so I can catch and report exceptions the message
 	# handlers may throw.
-	bot = telebot.TeleBot(f.read(), parse_mode="MarkdownV2", threaded=False)
+	bot = telebot.TeleBot(f.read().strip(), parse_mode="MarkdownV2", threaded=False)
 
 @bot.message_handler(commands = ["help"])
 def help(message):
